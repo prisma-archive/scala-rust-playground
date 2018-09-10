@@ -11,7 +11,7 @@ object Hello extends Greeting {
     println(libc.puts("hello c"))
 
     val library = Native.loadLibrary("hello", classOf[RustInterface])
-//    library.printGreeting()
+    library.printGreeting()
 
     println(library.hello())
   }
