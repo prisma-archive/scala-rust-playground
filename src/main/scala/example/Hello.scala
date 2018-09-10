@@ -5,10 +5,10 @@ import com.sun.jna.{Library, Native}
 object Hello extends Greeting {
 
   def main(args: Array[String]): Unit = {
-    println(greeting)
-
-    val libc = Native.loadLibrary("c", classOf[libc])
-    println(libc.puts("hello c"))
+//    println(greeting)
+//
+//    val libc = Native.loadLibrary("c", classOf[libc])
+//    println(libc.puts("hello c"))
 
     val library = Native.loadLibrary("hello", classOf[RustInterface])
     library.printGreeting()

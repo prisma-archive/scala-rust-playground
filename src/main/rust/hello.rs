@@ -15,7 +15,7 @@ use std::os::raw::c_char;
 pub extern fn printGreeting() {
     // Convert the C string to a Rust one
 //    let name = to_string(name);
-    println!("Hello from Rust,");
+    println!("printGreeting");
 }
 
 
@@ -23,7 +23,6 @@ pub extern fn printGreeting() {
 #[allow(non_snake_case)]
 pub fn hello() -> *const c_char {
 //    return "Hello from Rust!".to_string();
-    println!("calling hello()");
     return to_ptr("Hello from Rust!".to_string())
 }
 //
@@ -41,7 +40,6 @@ fn to_string(pointer: *const c_char) -> String {
 
 /// Convert a Rust string to a native string
 fn to_ptr(string: String) -> *const c_char {
-    println!("Converting string to a pointer!");
     let cs = CString::new(string.as_bytes()).unwrap();
     let ptr = cs.as_ptr();
     // Tell Rust not to clean up the string while we still have a pointer to it.
