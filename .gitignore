@@ -1,2 +1,4 @@
 target/
 *.dylib
+.idea
+*.log
