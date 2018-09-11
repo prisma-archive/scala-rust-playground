@@ -1,6 +1,7 @@
 package example
 
 import com.sun.jna.{Library, Native}
+import org.graalvm.nativeimage.c
 
 object Hello extends Greeting {
 
@@ -10,10 +11,12 @@ object Hello extends Greeting {
 //    val libc = Native.loadLibrary("c", classOf[libc])
 //    println(libc.puts("hello c"))
 
-    val library = Native.loadLibrary("hello", classOf[RustInterface])
-    library.printGreeting()
+//    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
+//    library.printGreeting()
 
-    println(library.hello())
+    RustInterfaceGraal.printGreeting()
+
+//    println(library.hello())
   }
 }
 

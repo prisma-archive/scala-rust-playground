@@ -2,3 +2,4 @@ target/
 *.dylib
 .idea
 *.log
+example.hello
