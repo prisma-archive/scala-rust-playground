@@ -38,7 +38,7 @@ pub extern fn newCounterByReference() -> Box<Counter> {
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn newCounterByValue() -> Counter {
+pub extern fn newCounterByValue() -> Counter { // i added this public function so that the Counter struct is added to the header file. Otherwise it won't.
     let c = Counter {
         count: 0
     };
