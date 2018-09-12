@@ -7,19 +7,23 @@ import org.graalvm.nativeimage.c.`type`.CTypeConversion
 object Hello extends Greeting {
 
   def main(args: Array[String]): Unit = {
-//    println(greeting)
-//
+    // debug flags for loading JNA itself
+    System.setProperty("jna.debug_load.jna", "true")
+    System.setProperty("jna.boot.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/jnalib/")
+    // debug flags for loading libraries with JNA
+    System.setProperty("jna.debug_load", "true")
+    System.setProperty("jna.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/")
+    testJna()
+
+//    testGraalsCApi()
+  }
+
+  def testJna(): Unit = {
 //    val libc = Native.loadLibrary("c", classOf[libc])
 //    println(libc.puts("hello c"))
 
-//    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
-//    library.printHello()
-
-
-    testGraalsCApi()
-    System.gc()
-
-    Thread.sleep(3000)
+    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
+    library.printHello()
   }
 
   def testGraalsCApi(): Unit = {
