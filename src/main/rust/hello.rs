@@ -14,15 +14,50 @@ pub extern fn printHello() {
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub fn hello() -> *const c_char {
+pub extern fn hello() -> *const c_char {
     return to_ptr("Hello from Rust!".to_string())
 }
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub fn formatHello(str: *const c_char) -> *const c_char {
+pub extern fn formatHello(str: *const c_char) -> *const c_char {
     let argAsString = to_string(str);
     return to_ptr(format!("Hello {}, Rust is saying hello to you!", argAsString))
+}
+
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern fn newCounterByReference() -> Box<Counter> {
+    let c = Counter {
+        count: 0
+    };
+//    mem::forget(&c);
+    return Box::new(c);
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern fn newCounterByValue() -> Counter {
+    let c = Counter {
+        count: 0
+    };
+//    mem::forget(&c);
+    return c;
+}
+
+#[no_mangle]
+#[repr(C)]
+#[allow(non_snake_case)]
+pub struct Counter {
+    count: u64
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub fn increment(arg: &mut Counter){
+    arg.count = arg.count + 1
+        //println!(format!("count is {} now!", self.count))
 }
 
 /// Convert a native string to a Rust string

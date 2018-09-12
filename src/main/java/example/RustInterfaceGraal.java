@@ -14,4 +14,10 @@ public class RustInterfaceGraal {
 
     @CFunction
     static native CCharPointer formatHello(CCharPointer str);
+
+    @CFunction
+    static native CIntegration.Counter newCounterByReference();
+
+    @CFunction
+    static native void increment(CIntegration.Counter counter);
 }

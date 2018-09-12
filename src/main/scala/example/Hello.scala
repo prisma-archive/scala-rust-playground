@@ -23,6 +23,16 @@ object Hello extends Greeting {
     val formattedHello = CTypeConversion.toJavaString(RustInterfaceGraal.formatHello(CTypeConversion.toCString("Marcus").get()))
     println(s"formatHello returned: $formattedHello")
 
+    println("about to create a struct from Scala")
+    val struct = RustInterfaceGraal.newCounterByReference()
+    println("created the struct. Now calling a method on it")
+    println(struct.isNull)
+    println(s"count is: ${struct.getCount}")
+    RustInterfaceGraal.increment(struct)
+    println(s"count is: ${struct.getCount}")
+    RustInterfaceGraal.increment(struct)
+    println(s"count is: ${struct.getCount}")
+
 //    println(library.hello())
   }
 }
