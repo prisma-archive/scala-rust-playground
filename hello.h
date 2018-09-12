@@ -12,6 +12,8 @@ const char *formatHello(const char *str);
 
 const char *hello(void);
 
+void increment(Counter *arg);
+
 Box_Counter newCounterByReference(void);
 
 Counter newCounterByValue(void);

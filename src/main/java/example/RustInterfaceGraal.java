@@ -19,5 +19,8 @@ public class RustInterfaceGraal {
     static native CIntegration.Counter newCounterByReference();
 
     @CFunction
+    static native CIntegration.Counter newCounterByValue();
+
+    @CFunction
     static native void increment(CIntegration.Counter counter);
 }

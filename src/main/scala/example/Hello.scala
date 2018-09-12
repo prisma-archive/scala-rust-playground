@@ -15,6 +15,14 @@ object Hello extends Greeting {
 //    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
 //    library.printHello()
 
+
+    testGraalsCApi()
+    System.gc()
+
+    Thread.sleep(3000)
+  }
+
+  def testGraalsCApi(): Unit = {
     RustInterfaceGraal.printHello()
 
     val hello = CTypeConversion.toJavaString(RustInterfaceGraal.hello())
@@ -23,17 +31,22 @@ object Hello extends Greeting {
     val formattedHello = CTypeConversion.toJavaString(RustInterfaceGraal.formatHello(CTypeConversion.toCString("Marcus").get()))
     println(s"formatHello returned: $formattedHello")
 
+    testStructViaGraal()
+  }
+
+  def testStructViaGraal(): Unit = {
     println("about to create a struct from Scala")
+    val byValue = RustInterfaceGraal.newCounterByValue()
+    require(byValue.isNull) // don't know why that is
+
+
     val struct = RustInterfaceGraal.newCounterByReference()
     println("created the struct. Now calling a method on it")
-    println(struct.isNull)
     println(s"count is: ${struct.getCount}")
     RustInterfaceGraal.increment(struct)
     println(s"count is: ${struct.getCount}")
     RustInterfaceGraal.increment(struct)
     println(s"count is: ${struct.getCount}")
-
-//    println(library.hello())
   }
 }
 

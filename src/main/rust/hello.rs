@@ -53,9 +53,15 @@ pub struct Counter {
     count: u64
 }
 
+impl Drop for Counter {
+    fn drop(&mut self) {
+        println!("Dropping!"); // i would like to see this getting called to ensure we don't leak memory
+    }
+}
+
 #[no_mangle]
 #[allow(non_snake_case)]
-pub fn increment(arg: &mut Counter){
+pub extern fn increment(arg: &mut Counter){
     arg.count = arg.count + 1
         //println!(format!("count is {} now!", self.count))
 }
