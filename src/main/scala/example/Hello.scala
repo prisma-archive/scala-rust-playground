@@ -1,18 +1,24 @@
 package example
 
-import com.sun.jna.{Library, Native}
+import com.sun.jna.{Function, Library, Native}
 import org.graalvm.nativeimage.c
 import org.graalvm.nativeimage.c.`type`.CTypeConversion
 
 object Hello extends Greeting {
+  System.setProperty("jna.debug_load", "true")
+  System.setProperty("jna.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/")
+  val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
+  library.printHello()
+//  classOf[Native].getMethod("invokeVoid", classOf[Function], classOf[Long], classOf[Integer], classOf[Array[Object]])
+//  classOf[Native].getDeclaredMethods.foreach { method =>
+//    classOf[Native].getDeclaredMethod(method.getName, method.getParameterTypes: _*)
+//  }
 
   def main(args: Array[String]): Unit = {
     // debug flags for loading JNA itself
     System.setProperty("jna.debug_load.jna", "true")
-    System.setProperty("jna.boot.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/jnalib/")
+//    System.setProperty("jna.boot.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/jnalib/")
     // debug flags for loading libraries with JNA
-    System.setProperty("jna.debug_load", "true")
-    System.setProperty("jna.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/")
     testJna()
 
 //    testGraalsCApi()
@@ -22,7 +28,7 @@ object Hello extends Greeting {
 //    val libc = Native.loadLibrary("c", classOf[libc])
 //    println(libc.puts("hello c"))
 
-    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
+//    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
     library.printHello()
   }
 

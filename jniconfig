@@ -1,6 +1,6 @@
 [
   {
-    "nIame" : "com.sun.jna.Native",
+    "name" : "com.sun.jna.Native",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
