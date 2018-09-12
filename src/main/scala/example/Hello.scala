@@ -2,6 +2,7 @@ package example
 
 import com.sun.jna.{Library, Native}
 import org.graalvm.nativeimage.c
+import org.graalvm.nativeimage.c.`type`.CTypeConversion
 
 object Hello extends Greeting {
 
@@ -12,9 +13,15 @@ object Hello extends Greeting {
 //    println(libc.puts("hello c"))
 
 //    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
-//    library.printGreeting()
+//    library.printHello()
 
-    RustInterfaceGraal.printGreeting()
+    RustInterfaceGraal.printHello()
+
+    val hello = CTypeConversion.toJavaString(RustInterfaceGraal.hello())
+    println(s"hello returned: $hello")
+
+    val formattedHello = CTypeConversion.toJavaString(RustInterfaceGraal.formatHello(CTypeConversion.toCString("Marcus").get()))
+    println(s"formatHello returned: $formattedHello")
 
 //    println(library.hello())
   }

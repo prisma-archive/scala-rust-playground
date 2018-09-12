@@ -12,10 +12,10 @@ use std::os::raw::c_char;
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn printGreeting() {
+pub extern fn printHello() {
     // Convert the C string to a Rust one
 //    let name = to_string(name);
-    println!("printGreeting");
+    println!("Hello! (This was printed in Rust)");
 }
 
 
@@ -24,6 +24,13 @@ pub extern fn printGreeting() {
 pub fn hello() -> *const c_char {
 //    return "Hello from Rust!".to_string();
     return to_ptr("Hello from Rust!".to_string())
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub fn formatHello(str: *const c_char) -> *const c_char {
+    let argAsString = to_string(str);
+    return to_ptr(format!("Hello {}, Rust is saying hello to you!", argAsString))
 }
 //
 //#[no_mangle]
