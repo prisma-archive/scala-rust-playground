@@ -1,5 +1,3 @@
-#![crate_type = "dylib"]
-
 use std::ffi::{CStr,CString};
 use std::mem;
 use std::str;
@@ -69,7 +67,7 @@ impl Drop for Counter {
 #[allow(non_snake_case)]
 pub extern fn increment(arg: &mut Counter){
     arg.count = arg.count + 1
-        //println!(format!("count is {} now!", self.count))
+    //println!(format!("count is {} now!", self.count))
 }
 
 /// Convert a native string to a Rust string
