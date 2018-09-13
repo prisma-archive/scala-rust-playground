@@ -1,31 +1,25 @@
 package example
 
+import com.sun.jna.Native
 import org.graalvm.nativeimage.c.`type`.CTypeConversion
 
 object Hello {
-//  System.setProperty("jna.debug_load", "true")
-//  System.setProperty("jna.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/")
-//  val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
-//  library.printHello()
-//  classOf[Native].getMethod("invokeVoid", classOf[Function], classOf[Long], classOf[Integer], classOf[Array[Object]])
-//  classOf[Native].getDeclaredMethods.foreach { method =>
-//    classOf[Native].getDeclaredMethod(method.getName, method.getParameterTypes: _*)
-//  }
 
   def main(args: Array[String]): Unit = {
-    // debug flags for loading JNA itself
-//    System.setProperty("jna.debug_load.jna", "true")
-//    System.setProperty("jna.boot.library.path", "/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/jnalib/")
-    // debug flags for loading libraries with JNA
-//    testJna()
+    testJna()
 
-    testGraalsCApi()
+//    testGraalsCApi()
   }
-//
-//  def testJna(): Unit = {
-////    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
-//    library.printHello()
-//  }
+
+  def testJna(): Unit = {
+    val currentDir = System.getProperty("user.dir")
+    System.setProperty("jna.debug_load.jna", "true")
+    System.setProperty("jna.boot.library.path", s"$currentDir/jnalib/")
+    System.setProperty("jna.debug_load", "true")
+    System.setProperty("jna.library.path", s"$currentDir")
+    val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
+    library.printHello()
+  }
 
   def testGraalsCApi(): Unit = {
     RustInterfaceGraal.printHello()
