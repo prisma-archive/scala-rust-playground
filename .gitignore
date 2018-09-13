@@ -3,3 +3,4 @@ target/
 .idea
 *.log
 hello
+lib_managed/
