@@ -1,10 +1,10 @@
 extern crate serde;
 extern crate serde_json;
-use serde_json::{Value, Error};
 
 
 #[macro_use]
 extern crate serde_derive;
+extern crate diesel;
 
 use std::ffi::{CStr,CString};
 use std::mem;
@@ -42,6 +42,17 @@ pub extern fn processJson(string: *const c_char) -> *const c_char {
 #[derive(Serialize, Deserialize)]
 struct JsonMessage {
     message: String
+}
+
+
+pub mod db;
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern fn readFromDb(query: *const c_char) -> *const c_char {
+    let connection = db::establish_connection();
+    let posts = db::get_posts(connection);
+    return to_ptr(posts.to_string());
 }
 
 
