@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-rm hello
+rm hello hello.h
 echo ">>>>>>>>>>>> Compiling the rust sources"
 cd hello-rs && cargo build && cd -
 echo ">>>>>>>>>>>> Generating the Header files"

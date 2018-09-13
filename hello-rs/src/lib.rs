@@ -1,3 +1,11 @@
+extern crate serde;
+extern crate serde_json;
+use serde_json::{Value, Error};
+
+
+#[macro_use]
+extern crate serde_derive;
+
 use std::ffi::{CStr,CString};
 use std::mem;
 use std::str;
@@ -25,8 +33,15 @@ pub extern fn formatHello(str: *const c_char) -> *const c_char {
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn processJson(str: *const c_char) -> *const c_char {
-    return str;
+pub extern fn processJson(string: *const c_char) -> *const c_char {
+    let message: JsonMessage = serde_json::from_str(&to_string(string)).unwrap();
+    let responseJson = serde_json::to_string(&JsonMessage{message: format!("Echoing the message [{}]", message.message)}).unwrap();
+    return to_ptr(responseJson);
+}
+
+#[derive(Serialize, Deserialize)]
+struct JsonMessage {
+    message: String
 }
 
 

@@ -20,4 +20,4 @@ Counter newCounterByValue(void);
 
 void printHello(void);
 
-const char *processJson(const char *str);
+const char *processJson(const char *string);
