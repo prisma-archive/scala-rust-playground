@@ -19,6 +19,9 @@ public class RustInterfaceGraal {
     static native CCharPointer processJson(CCharPointer str);
 
     @CFunction
+    static native CCharPointer readFromDb(CCharPointer query);
+
+    @CFunction
     static native CIntegration.Counter newCounterByReference();
 
     @CFunction

@@ -33,6 +33,7 @@ object Hello {
 
     testStructViaGraal()
     testJsonViaGraal()
+    testSqlViaGraal()
   }
 
   def testStructViaGraal(): Unit = {
@@ -56,5 +57,12 @@ object Hello {
     println("got the following JSON from Rust")
     val jsonResult = Json.parse(CTypeConversion.toJavaString(result))
     println(jsonResult.toString())
+  }
+
+  def testSqlViaGraal(): Unit = {
+    println("about to test sql")
+    val cResult = RustInterfaceGraal.readFromDb(CTypeConversion.toCString("").get())
+    val result  = CTypeConversion.toJavaString(cResult)
+    println(s"sql result is: $result")
   }
 }

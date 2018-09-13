@@ -21,3 +21,5 @@ Counter newCounterByValue(void);
 void printHello(void);
 
 const char *processJson(const char *string);
+
+const char *readFromDb(const char *query);

@@ -4,7 +4,7 @@ use diesel::dsl::sql_query;
 use std::env;
 
 pub fn establish_connection() -> PgConnection {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").unwrap_or(String::from("postgres://postgres:prisma@localhost/"));
     return PgConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url));
 
