@@ -1,6 +1,7 @@
 import sbt._
 
 object Dependencies {
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.5"
-  lazy val jna = "net.java.dev.jna" % "jna" % "4.5.2"
+  lazy val scalaTest = "org.scalatest"     %% "scalatest" % "3.0.5"
+  lazy val jna       = "net.java.dev.jna"  % "jna"        % "4.5.2"
+  lazy val playJson  = "com.typesafe.play" %% "play-json" % "2.6.8"
 }

@@ -19,3 +19,5 @@ Box_Counter newCounterByReference(void);
 Counter newCounterByValue(void);
 
 void printHello(void);
+
+const char *processJson(const char *str);

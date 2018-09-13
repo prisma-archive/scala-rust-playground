@@ -25,6 +25,12 @@ pub extern fn formatHello(str: *const c_char) -> *const c_char {
     return to_ptr(format!("Hello {}, Rust is saying hello to you!", argAsString))
 }
 
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern fn processJson(str: *const c_char) -> *const c_char {
+    return str;
+}
+
 
 #[no_mangle]
 #[allow(non_snake_case)]

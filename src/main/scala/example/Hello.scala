@@ -2,13 +2,14 @@ package example
 
 import com.sun.jna.Native
 import org.graalvm.nativeimage.c.`type`.CTypeConversion
+import play.api.libs.json.Json
 
 object Hello {
 
   def main(args: Array[String]): Unit = {
-    testJna()
+//    testJna()
 
-//    testGraalsCApi()
+    testGraalsCApi()
   }
 
   def testJna(): Unit = {
@@ -31,6 +32,7 @@ object Hello {
     println(s"formatHello returned: $formattedHello")
 
     testStructViaGraal()
+    testJsonViaGraal()
   }
 
   def testStructViaGraal(): Unit = {
@@ -47,5 +49,12 @@ object Hello {
     println(s"count is: ${struct.getCount}")
   }
 
-  def testJsonViaGraal(): Unit = {}
+  def testJsonViaGraal(): Unit = {
+    val json = Json.obj("message" -> "hello from Scala")
+    println(s"passing a JSON string from Scala: ${json.toString}")
+    val result = RustInterfaceGraal.processJson(CTypeConversion.toCString(json.toString()).get())
+    println("got the following JSON from Rust")
+    val jsonResult = Json.parse(CTypeConversion.toJavaString(result))
+    println(jsonResult.toString())
+  }
 }

@@ -16,6 +16,9 @@ public class RustInterfaceGraal {
     static native CCharPointer formatHello(CCharPointer str);
 
     @CFunction
+    static native CCharPointer processJson(CCharPointer str);
+
+    @CFunction
     static native CIntegration.Counter newCounterByReference();
 
     @CFunction
