@@ -38,7 +38,6 @@ object Hello {
     val byValue = RustInterfaceGraal.newCounterByValue()
     require(byValue.isNull) // don't know why that is
 
-
     val struct = RustInterfaceGraal.newCounterByReference()
     println("created the struct. Now calling a method on it")
     println(s"count is: ${struct.getCount}")
@@ -47,4 +46,6 @@ object Hello {
     RustInterfaceGraal.increment(struct)
     println(s"count is: ${struct.getCount}")
   }
+
+  def testJsonViaGraal(): Unit = {}
 }
