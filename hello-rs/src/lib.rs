@@ -4,7 +4,6 @@ extern crate serde_json;
 
 #[macro_use]
 extern crate serde_derive;
-extern crate diesel;
 
 use std::ffi::{CStr,CString};
 use std::mem;
@@ -45,13 +44,15 @@ struct JsonMessage {
 }
 
 
-pub mod db;
+//pub mod db;
+pub mod purepg;
 
 #[no_mangle]
 #[allow(non_snake_case)]
 pub extern fn readFromDb(query: *const c_char) -> *const c_char {
-    let connection = db::establish_connection();
-    let posts = db::get_posts(connection);
+//    let connection = db::establish_connection();
+//    let posts = db::get_posts_diesel(connection);
+    let posts = purepg::get_posts();
     return to_ptr(posts.to_string());
 }
 
