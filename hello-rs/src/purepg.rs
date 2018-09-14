@@ -3,12 +3,18 @@ extern crate serde_json;
 
 use self::postgres::{Connection, TlsMode};
 use self::postgres::rows::Row;
-use std::env;
+use self::postgres::types::{IsNull, ToSql, Type};
 use std::collections::BTreeMap;
+use std::env;
+use std::error::Error;
 
 pub fn get_posts() -> String {
+    return query(String::from("SELECT * FROM posts where id = $1;"), vec!(&GcValue::Int(2)));
+}
+
+fn query(query: String, params: Vec<&GcValue>) -> String {
     let conn = Connection::connect(database_url(), TlsMode::None).unwrap();
-    let rows = &conn.query("SELECT * FROM posts;", &[]).unwrap();
+    let rows = &conn.query(&*query, &gcValuesToToSql(params)).unwrap();
     println!("The result set has {} columns", rows.columns().len());
     for column in rows.columns() {
         println!("column {} of type {}", column.name(), column.type_());
@@ -31,7 +37,7 @@ fn serializeToJson(row: Row) -> serde_json::Value {
                 let number = serde_json::Number::from_f64(value as f64
                 ).unwrap();
                 serde_json::Value::Number(number)
-            }
+            },
             &postgres::types::VARCHAR => serde_json::Value::String(row.get(i)),
             &postgres::types::TEXT => serde_json::Value::String(row.get(i)),
             x => panic!("type {} is not supported", x),
@@ -44,4 +50,23 @@ fn serializeToJson(row: Row) -> serde_json::Value {
 
 fn database_url() -> String {
     return env::var("DATABASE_URL").unwrap_or(String::from("postgres://postgres:prisma@localhost/"));
+}
+
+fn gcValuesToToSql<'a>(values: Vec<&'a GcValue>) -> Vec<&'a ToSql> {
+    values.into_iter().map(|x| gcValueToToSql(x)).collect()
+}
+
+fn gcValueToToSql<'a>(value: &'a GcValue) -> &'a ToSql {
+    match value {
+        &GcValue::Int(ref i) => i,
+        &GcValue::String(ref str) => str,
+        &GcValue::Boolean(ref b) => b,
+    }
+}
+
+#[derive(Debug)]
+enum GcValue {
+    Int(i32),
+    String(String),
+    Boolean(bool),
 }
