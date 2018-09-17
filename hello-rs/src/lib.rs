@@ -56,6 +56,16 @@ pub extern fn readFromDb(query: *const c_char) -> *const c_char {
     return to_ptr(posts.to_string());
 }
 
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern fn sqlQuery(query: *const c_char, params: *const c_char) -> *const c_char {
+    let queryString = to_string(query);
+    let paramsString = to_string(params);
+    let params =  purepg::toGcValues(&paramsString).expect(&*format!("could not convert gc values successfully: {}", &paramsString));
+    let posts = purepg::query(queryString, params.iter().collect());
+    return to_ptr(posts.to_string());
+}
+
 
 #[no_mangle]
 #[allow(non_snake_case)]

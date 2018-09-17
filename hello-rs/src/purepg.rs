@@ -13,8 +13,9 @@ pub fn get_posts() -> String {
     return query(String::from("SELECT * FROM posts where id = $1;"), vec!(&GcValue::Int(2)));
 }
 
-fn query(query: String, params: Vec<&GcValue>) -> String {
+pub fn query(query: String, params: Vec<&GcValue>) -> String {
     let conn = Connection::connect(database_url(), TlsMode::None).unwrap();
+    println!("Query received the params: {:?}", params);
     let rows = &conn.query(&*query, &gcValuesToToSql(params)).unwrap();
     println!("The result set has {} columns", rows.columns().len());
     for column in rows.columns() {
@@ -54,18 +55,18 @@ fn database_url() -> String {
 }
 
 fn gcValuesToToSql<'a>(values: Vec<&'a GcValue>) -> Vec<&'a ToSql> {
-    values.into_iter().map(|x| gcValueToToSql(x)).collect()
+    values.into_iter().map(gcValueToToSql).collect()
 }
 
 fn gcValueToToSql<'a>(value: &'a GcValue) -> &'a ToSql {
     match value {
-        &GcValue::Int(ref i) => i,
+        &GcValue::Int(ref i)      => i,
         &GcValue::String(ref str) => str,
-        &GcValue::Boolean(ref b) => b,
+        &GcValue::Boolean(ref b)  => b,
     }
 }
 
-pub fn toGcValues(str: String) -> Result<Vec<GcValue>, String> {
+pub fn toGcValues(str: &String) -> Result<Vec<GcValue>, String> {
     match serde_json::from_str::<serde_json::Value>(&*str) {
         Ok(serde_json::Value::Array(elements)) => elements.iter().map(jsonToGcValue).collect(),
         Ok(json)                               => Err(String::from(format!("provided json was not an array: {}", json))),
@@ -75,7 +76,7 @@ pub fn toGcValues(str: String) -> Result<Vec<GcValue>, String> {
 
 pub fn toGcValue(str: String) -> Result<GcValue, String> {
     match serde_json::from_str::<serde_json::Value>(&*str) {
-        Ok(result) => jsonToGcValue(&result),
+        Ok(result)     => jsonToGcValue(&result),
         Err(e)         => Err(String::from(format!("json parsing failed: {}", e))),
     }
 }
@@ -83,7 +84,7 @@ pub fn toGcValue(str: String) -> Result<GcValue, String> {
 fn jsonToGcValue(json: &serde_json::Value) -> Result<GcValue, String> {
     match json {
         &serde_json::Value::Object(ref map) => jsonObjecToGcValue(map),
-        x => Err(format!("{} is not a valid value for a GcValue", x)),
+        x                                   => Err(format!("{} is not a valid value for a GcValue", x)),
     }
 }
 
@@ -92,9 +93,9 @@ fn jsonObjecToGcValue(map: &serde_json::Map<String, serde_json::Value>) -> Resul
     let value = map.get("value").unwrap();
 
     match (discriminator, value) {
-        ("Int", &serde_json::Value::Number(ref n)) => Ok(GcValue::Int(n.as_i64().unwrap() as i32)),
+        ("Int", &serde_json::Value::Number(ref n))    => Ok(GcValue::Int(n.as_i64().unwrap() as i32)),
         ("String", &serde_json::Value::String(ref s)) => Ok(GcValue::String(s.to_string())),
-        ("Boolean", &serde_json::Value::Bool(b)) => Ok(GcValue::Boolean(b)),
+        ("Boolean", &serde_json::Value::Bool(b))      => Ok(GcValue::Boolean(b)),
         (d, v) => Err(format!("discriminator {} and value {} are invalid combinations", d, v)),
     }
 }

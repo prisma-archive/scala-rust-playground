@@ -23,3 +23,5 @@ void printHello(void);
 const char *processJson(const char *string);
 
 const char *readFromDb(const char *query);
+
+const char *sqlQuery(const char *query, const char *params);

@@ -22,6 +22,9 @@ public class RustInterfaceGraal {
     static native CCharPointer readFromDb(CCharPointer query);
 
     @CFunction
+    static native CCharPointer sqlQuery(CCharPointer query, CCharPointer params);
+
+    @CFunction
     static native CIntegration.Counter newCounterByReference();
 
     @CFunction

@@ -16,7 +16,7 @@ fn main() {
     }
     {
         let json = r###"[{"discriminator": "String", "value": "my string"}, {"discriminator": "Boolean", "value": true}]"###;
-        let result = purepg::toGcValues(String::from(json)).unwrap();
+        let result = purepg::toGcValues(&String::from(json)).unwrap();
         println!("{:?}", result);
         let expected = vec!(purepg::GcValue::String(String::from("my string")), purepg::GcValue::Boolean(true));
         assert_eq!(result, expected);
