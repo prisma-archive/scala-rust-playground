@@ -65,21 +65,29 @@ fn gcValueToToSql<'a>(value: &'a GcValue) -> &'a ToSql {
     }
 }
 
+pub fn toGcValues(str: String) -> Result<Vec<GcValue>, String> {
+    match serde_json::from_str::<serde_json::Value>(&*str) {
+        Ok(serde_json::Value::Array(elements)) => elements.iter().map(jsonToGcValue).collect(),
+        Ok(json)                               => Err(String::from(format!("provided json was not an array: {}", json))),
+        Err(e)                                 => Err(String::from(format!("json parsing failed: {}", e))),
+    }
+}
+
 pub fn toGcValue(str: String) -> Result<GcValue, String> {
     match serde_json::from_str::<serde_json::Value>(&*str) {
-        Ok(result) => jsonToGcValue(result),
+        Ok(result) => jsonToGcValue(&result),
         Err(e)         => Err(String::from(format!("json parsing failed: {}", e))),
     }
 }
 
-fn jsonToGcValue(json: serde_json::Value) -> Result<GcValue, String> {
+fn jsonToGcValue(json: &serde_json::Value) -> Result<GcValue, String> {
     match json {
-        serde_json::Value::Object(map) => jsonObjecToGcValue(map),
+        &serde_json::Value::Object(ref map) => jsonObjecToGcValue(map),
         x => Err(format!("{} is not a valid value for a GcValue", x)),
     }
 }
 
-fn jsonObjecToGcValue(map: serde_json::Map<String, serde_json::Value>) -> Result<GcValue, String> {
+fn jsonObjecToGcValue(map: &serde_json::Map<String, serde_json::Value>) -> Result<GcValue, String> {
     let discriminator = map.get("discriminator").unwrap().as_str().unwrap();
     let value = map.get("value").unwrap();
 
