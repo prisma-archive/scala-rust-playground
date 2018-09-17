@@ -1,12 +1,13 @@
 extern crate postgres;
 extern crate serde_json;
+extern crate serde;
 
 use self::postgres::{Connection, TlsMode};
 use self::postgres::rows::Row;
 use self::postgres::types::{IsNull, ToSql, Type};
 use std::collections::BTreeMap;
 use std::env;
-use std::error::Error;
+use self::serde_json::Error;
 
 pub fn get_posts() -> String {
     return query(String::from("SELECT * FROM posts where id = $1;"), vec!(&GcValue::Int(2)));
@@ -64,9 +65,35 @@ fn gcValueToToSql<'a>(value: &'a GcValue) -> &'a ToSql {
     }
 }
 
-#[derive(Debug)]
-enum GcValue {
-    Int(i32),
+pub fn toGcValue(str: String) -> Result<GcValue, String> {
+    match serde_json::from_str::<serde_json::Value>(&*str) {
+        Ok(result) => jsonToGcValue(result),
+        Err(e)         => Err(String::from(format!("json parsing failed: {}", e))),
+    }
+}
+
+fn jsonToGcValue(json: serde_json::Value) -> Result<GcValue, String> {
+    match json {
+        serde_json::Value::Object(map) => jsonObjecToGcValue(map),
+        x => Err(format!("{} is not a valid value for a GcValue", x)),
+    }
+}
+
+fn jsonObjecToGcValue(map: serde_json::Map<String, serde_json::Value>) -> Result<GcValue, String> {
+    let discriminator = map.get("discriminator").unwrap().as_str().unwrap();
+    let value = map.get("value").unwrap();
+
+    match (discriminator, value) {
+        ("Int", &serde_json::Value::Number(ref n)) => Ok(GcValue::Int(n.as_i64().unwrap())),
+        ("String", &serde_json::Value::String(ref s)) => Ok(GcValue::String(s.to_string())),
+        ("Boolean", &serde_json::Value::Bool(b)) => Ok(GcValue::Boolean(b)),
+        (d, v) => Err(format!("discriminator {} and value {} are invalid combinations", d, v)),
+    }
+}
+
+#[derive(Debug,PartialEq)]
+pub enum GcValue {
+    Int(i64),
     String(String),
     Boolean(bool),
 }
