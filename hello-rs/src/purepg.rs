@@ -92,7 +92,7 @@ fn jsonObjecToGcValue(map: &serde_json::Map<String, serde_json::Value>) -> Resul
     let value = map.get("value").unwrap();
 
     match (discriminator, value) {
-        ("Int", &serde_json::Value::Number(ref n)) => Ok(GcValue::Int(n.as_i64().unwrap())),
+        ("Int", &serde_json::Value::Number(ref n)) => Ok(GcValue::Int(n.as_i64().unwrap() as i32)),
         ("String", &serde_json::Value::String(ref s)) => Ok(GcValue::String(s.to_string())),
         ("Boolean", &serde_json::Value::Bool(b)) => Ok(GcValue::Boolean(b)),
         (d, v) => Err(format!("discriminator {} and value {} are invalid combinations", d, v)),
@@ -101,7 +101,7 @@ fn jsonObjecToGcValue(map: &serde_json::Map<String, serde_json::Value>) -> Resul
 
 #[derive(Debug,PartialEq)]
 pub enum GcValue {
-    Int(i64),
+    Int(i32),
     String(String),
     Boolean(bool),
 }
