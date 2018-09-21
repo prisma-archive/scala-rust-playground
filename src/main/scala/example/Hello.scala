@@ -74,9 +74,9 @@ object Hello {
     val query = sql
       .select()
       .from(table("posts"))
-      .where(field("id").in("?"))
+      .where(field("id").in("?", "?"))
 
-    val rawSqlString = query.getSQL(ParamType.NAMED).replace(":1", "$1")
+    val rawSqlString = query.getSQL(ParamType.NAMED).replace(":", "$")
     println(s"raw jooq sql: $rawSqlString")
 //    println(query.getSQL(ParamType.INDEXED))
 //    println("-" * 50)
@@ -88,14 +88,23 @@ object Hello {
 //    println("-" * 50)
     val paramsString = Json
       .arr(
-        Json.obj("discriminator" -> "Int", "value" -> 1)
+        Json.obj("discriminator" -> "Int", "value" -> 1),
+        Json.obj("discriminator" -> "Int", "value" -> 2)
       )
       .toString()
     val cResult2 = RustInterfaceGraal.sqlQuery(
       CTypeConversion.toCString(rawSqlString).get(),
       CTypeConversion.toCString(paramsString).get()
     )
-    val result2 = CTypeConversion.toJavaString(cResult2)
-    println(s"sql result is: $result2")
+    val resultAsString = CTypeConversion.toJavaString(cResult2)
+    println(s"sql result is: $resultAsString")
+
+    val jsonResultSet = JsonResultSet.fromString(resultAsString).get
+    while (jsonResultSet.next()) {
+      println(s"body: ${jsonResultSet.getString("body")}")
+      println(s"id: ${jsonResultSet.getInt("id")}")
+      println(s"published: ${jsonResultSet.getBoolean("published")}")
+      println(s"title: ${jsonResultSet.getString("title")}")
+    }
   }
 }
