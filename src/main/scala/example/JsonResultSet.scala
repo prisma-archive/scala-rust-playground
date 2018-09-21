@@ -21,7 +21,7 @@ object JsonResultSet {
 
 case class JsonResultSet(rows: IndexedSeq[JsObject]) extends ResultSet with DefaultReads {
   import DefaultValues._
-  var cursor: Int = -1
+  private var cursor: Int = -1
 
   override def next(): Boolean = {
     cursor += 1

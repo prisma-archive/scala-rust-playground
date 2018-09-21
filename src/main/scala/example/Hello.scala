@@ -106,5 +106,22 @@ object Hello {
       println(s"published: ${jsonResultSet.getBoolean("published")}")
       println(s"title: ${jsonResultSet.getString("title")}")
     }
+
+    println("*" * 100)
+    println("      Testing the CustomJdbcDriver !!!")
+    // testing custom jdbc driver
+    val driver     = CustomJdbcDriver()
+    val connection = driver.connect("whatever", null)
+    val ps         = connection.prepareStatement(rawSqlString)
+    ps.setInt(0, 1)
+    ps.setInt(1, 2)
+
+    val rs = ps.executeQuery()
+    while (rs.next()) {
+      println(s"body: ${rs.getString("body")}")
+      println(s"id: ${rs.getInt("id")}")
+      println(s"published: ${rs.getBoolean("published")}")
+      println(s"title: ${rs.getString("title")}")
+    }
   }
 }
