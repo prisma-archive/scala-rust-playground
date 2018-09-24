@@ -5,6 +5,7 @@ import org.graalvm.nativeimage.c.`type`.CTypeConversion
 import org.jooq.SQLDialect
 import org.jooq.conf.{ParamType, Settings}
 import org.jooq.impl.DSL
+import org.postgresql.core.Parser
 import play.api.libs.json.Json
 
 object Hello {
@@ -76,8 +77,14 @@ object Hello {
       .from(table("posts"))
       .where(field("id").in("?", "?"))
 
-    val rawSqlString = query.getSQL(ParamType.NAMED).replace(":", "$")
-    println(s"raw jooq sql: $rawSqlString")
+//    val rawSqlString = query.getSQL(ParamType.NAMED).replace(":", "$")
+    val standardConformingStrings  = true
+    val withParameters             = true
+    val splitStatements            = true
+    val isBatchedReWriteConfigured = false
+    val rawSqlString =
+      Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
+    println(s"raw sql string: $rawSqlString")
 //    println(query.getSQL(ParamType.INDEXED))
 //    println("-" * 50)
 //    println(query.getSQL(ParamType.NAMED))

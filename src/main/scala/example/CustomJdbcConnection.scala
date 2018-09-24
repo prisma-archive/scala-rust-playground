@@ -6,6 +6,8 @@ import java.util.Properties
 import java.util.concurrent.Executor
 
 class CustomJdbcConnection extends Connection {
+  override def prepareStatement(sql: String): PreparedStatement = CustomPreparedStatement(sql)
+
   override def commit() = ???
 
   override def getHoldability = ???
@@ -13,8 +15,6 @@ class CustomJdbcConnection extends Connection {
   override def setCatalog(catalog: String) = ???
 
   override def setHoldability(holdability: Int) = ???
-
-  override def prepareStatement(sql: String): PreparedStatement = CustomPreparedStatement(sql)
 
   override def prepareStatement(sql: String, resultSetType: Int, resultSetConcurrency: Int) = ???
 
