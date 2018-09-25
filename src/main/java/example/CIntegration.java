@@ -20,14 +20,18 @@ public class CIntegration {
              * The header file with the C declarations that are imported. We use a helper class that
              * locates the file in our project structure.
              */
-            return Collections.singletonList("\"/Users/marcusboehm/R/github.com/graphcool/scala-rust-playground/hello.h\"");
+            return Collections.singletonList("\"" + System.getProperty("user.dir") + "/hello.h\"");
         }
     }
 
 
     @CStruct("Counter")
-    public interface Counter extends PointerBase{
+    public interface Counter extends PointerBase {
         @CField("count")
         long getCount();
+    }
+
+    @CStruct("PsqlConnection")
+    public interface RustConnection extends PointerBase {
     }
 }

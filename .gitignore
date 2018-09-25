@@ -4,3 +4,4 @@ target/
 *.log
 hello
 lib_managed/
+.envrc

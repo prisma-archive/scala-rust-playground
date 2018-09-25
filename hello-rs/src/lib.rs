@@ -1,89 +1,118 @@
 extern crate serde;
 extern crate serde_json;
 
-
 #[macro_use]
 extern crate serde_derive;
 
-use std::ffi::{CStr,CString};
+use std::ffi::{CStr, CString};
 use std::mem;
-use std::str;
 use std::os::raw::c_char;
+use std::str;
+
+pub mod driver;
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn printHello() {
+pub extern "C" fn newConnection(url: *const c_char) -> Box<driver::PsqlConnection> {
+    return driver::connect(to_string(url));
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern "C" fn sqlQuery(
+    conn: &driver::PsqlConnection,
+    query: *const c_char,
+    params: *const c_char,
+) -> *const c_char {
+    let queryString = to_string(query);
+    let paramsString = to_string(params);
+    let params = purepg::toGcValues(&paramsString).expect(&*format!(
+        "could not convert gc values successfully: {}",
+        &paramsString
+    ));
+
+    let result = conn.query(queryString, params.iter().collect());
+    return to_ptr(result.to_string());
+}
+
+//
+
+#[no_mangle]
+#[allow(non_snake_case)]
+pub extern "C" fn printHello() {
     println!("Hello! (This was printed in Rust)");
 }
 
-
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn hello() -> *const c_char {
-    return to_ptr("Hello from Rust!".to_string())
+pub extern "C" fn hello() -> *const c_char {
+    return to_ptr("Hello from Rust!".to_string());
 }
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn formatHello(str: *const c_char) -> *const c_char {
+pub extern "C" fn formatHello(str: *const c_char) -> *const c_char {
     let argAsString = to_string(str);
-    return to_ptr(format!("Hello {}, Rust is saying hello to you!", argAsString))
+    return to_ptr(format!(
+        "Hello {}, Rust is saying hello to you!",
+        argAsString
+    ));
 }
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn processJson(string: *const c_char) -> *const c_char {
+pub extern "C" fn processJson(string: *const c_char) -> *const c_char {
     let message: JsonMessage = serde_json::from_str(&to_string(string)).unwrap();
-    let responseJson = serde_json::to_string(&JsonMessage{message: format!("Echoing the message [{}]", message.message)}).unwrap();
+    let responseJson = serde_json::to_string(&JsonMessage {
+        message: format!("Echoing the message [{}]", message.message),
+    }).unwrap();
     return to_ptr(responseJson);
 }
 
 #[derive(Serialize, Deserialize)]
 struct JsonMessage {
-    message: String
+    message: String,
 }
-
 
 //pub mod db;
 pub mod purepg;
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn readFromDb(query: *const c_char) -> *const c_char {
-//    let connection = db::establish_connection();
-//    let posts = db::get_posts_diesel(connection);
+pub extern "C" fn readFromDb(query: *const c_char) -> *const c_char {
+    //    let connection = db::establish_connection();
+    //    let posts = db::get_posts_diesel(connection);
     let posts = purepg::get_posts();
     return to_ptr(posts.to_string());
 }
 
+// #[no_mangle]
+// #[allow(non_snake_case)]
+// pub extern "C" fn sqlQuery(query: *const c_char, params: *const c_char) -> *const c_char {
+//     let queryString = to_string(query);
+//     let paramsString = to_string(params);
+//     let params = purepg::toGcValues(&paramsString).expect(&*format!(
+//         "could not convert gc values successfully: {}",
+//         &paramsString
+//     ));
+//     let posts = purepg::query(queryString, params.iter().collect());
+//     return to_ptr(posts.to_string());
+// }
+
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn sqlQuery(query: *const c_char, params: *const c_char) -> *const c_char {
-    let queryString = to_string(query);
-    let paramsString = to_string(params);
-    let params =  purepg::toGcValues(&paramsString).expect(&*format!("could not convert gc values successfully: {}", &paramsString));
-    let posts = purepg::query(queryString, params.iter().collect());
-    return to_ptr(posts.to_string());
-}
-
-
-#[no_mangle]
-#[allow(non_snake_case)]
-pub extern fn newCounterByReference() -> Box<Counter> {
-    let c = Counter {
-        count: 0
-    };
-//    mem::forget(&c);
+pub extern "C" fn newCounterByReference() -> Box<Counter> {
+    let c = Counter { count: 0 };
+    //    mem::forget(&c);
     return Box::new(c);
 }
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn newCounterByValue() -> Counter { // i added this public function so that the Counter struct is added to the header file. Otherwise it won't.
-    let c = Counter {
-        count: 0
-    };
-//    mem::forget(&c);
+pub extern "C" fn newCounterByValue() -> Counter {
+    // i added this public function so that the Counter struct is added to the header file. Otherwise it won't.
+    let c = Counter { count: 0 };
+    //    mem::forget(&c);
     return c;
 }
 
@@ -91,7 +120,7 @@ pub extern fn newCounterByValue() -> Counter { // i added this public function s
 #[repr(C)]
 #[allow(non_snake_case)]
 pub struct Counter {
-    count: u64
+    count: u64,
 }
 
 impl Drop for Counter {
@@ -102,7 +131,7 @@ impl Drop for Counter {
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern fn increment(arg: &mut Counter){
+pub extern "C" fn increment(arg: &mut Counter) {
     arg.count = arg.count + 1
     //println!(format!("count is {} now!", self.count))
 }

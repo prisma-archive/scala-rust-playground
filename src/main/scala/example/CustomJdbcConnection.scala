@@ -5,8 +5,13 @@ import java.util
 import java.util.Properties
 import java.util.concurrent.Executor
 
-class CustomJdbcConnection extends Connection {
-  override def prepareStatement(sql: String): PreparedStatement = CustomPreparedStatement(sql)
+import org.graalvm.nativeimage.c.`type`.CTypeConversion
+
+class CustomJdbcConnection(url: String) extends Connection {
+
+  val connection = RustInterfaceGraal.newConnection(CTypeConversion.toCString(url).get())
+
+  override def prepareStatement(sql: String): PreparedStatement = new CustomPreparedStatement(connection, sql)
 
   override def commit() = ???
 

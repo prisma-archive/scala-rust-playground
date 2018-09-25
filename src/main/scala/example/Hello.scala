@@ -99,26 +99,26 @@ object Hello {
         Json.obj("discriminator" -> "Int", "value" -> 2)
       )
       .toString()
-    val cResult2 = RustInterfaceGraal.sqlQuery(
-      CTypeConversion.toCString(rawSqlString).get(),
-      CTypeConversion.toCString(paramsString).get()
-    )
-    val resultAsString = CTypeConversion.toJavaString(cResult2)
-    println(s"sql result is: $resultAsString")
-
-    val jsonResultSet = JsonResultSet.fromString(resultAsString).get
-    while (jsonResultSet.next()) {
-      println(s"body: ${jsonResultSet.getString("body")}")
-      println(s"id: ${jsonResultSet.getInt("id")}")
-      println(s"published: ${jsonResultSet.getBoolean("published")}")
-      println(s"title: ${jsonResultSet.getString("title")}")
-    }
+//    val cResult2 = RustInterfaceGraal.sqlQuery(
+//      CTypeConversion.toCString(rawSqlString).get(),
+//      CTypeConversion.toCString(paramsString).get()
+//    )
+//    val resultAsString = CTypeConversion.toJavaString(cResult2)
+//    println(s"sql result is: $resultAsString")
+//
+//    val jsonResultSet = JsonResultSet.fromString(resultAsString).get
+//    while (jsonResultSet.next()) {
+//      println(s"body: ${jsonResultSet.getString("body")}")
+//      println(s"id: ${jsonResultSet.getInt("id")}")
+//      println(s"published: ${jsonResultSet.getBoolean("published")}")
+//      println(s"title: ${jsonResultSet.getString("title")}")
+//    }
 
     println("*" * 100)
     println("      Testing the CustomJdbcDriver !!!")
     // testing custom jdbc driver
     val driver     = CustomJdbcDriver()
-    val connection = driver.connect("whatever", null)
+    val connection = driver.connect("postgres://postgres:prisma@localhost/", null)
     val ps         = connection.prepareStatement(rawSqlString)
     ps.setInt(0, 1)
     ps.setInt(1, 2)

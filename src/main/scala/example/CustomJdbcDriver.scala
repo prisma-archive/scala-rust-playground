@@ -12,6 +12,6 @@ case class CustomJdbcDriver() extends Driver {
   override def acceptsURL(url: String)                        = true
   override def getPropertyInfo(url: String, info: Properties) = Array.empty
 
-  override def connect(url: String, info: Properties) = new CustomJdbcConnection()
+  override def connect(url: String, info: Properties) = new CustomJdbcConnection(url)
 
 }

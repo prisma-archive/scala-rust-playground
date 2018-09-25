@@ -6,12 +6,13 @@ import java.sql
 import java.sql.{Blob, Clob, Date, NClob, PreparedStatement, Ref, ResultSet, RowId, SQLXML, Time, Timestamp}
 import java.util.Calendar
 
+import example.CIntegration.RustConnection
 import org.graalvm.nativeimage.c.`type`.CTypeConversion
 import play.api.libs.json.{JsArray, Json}
 
 import scala.collection.mutable
 
-case class CustomPreparedStatement(query: String) extends PreparedStatement {
+class CustomPreparedStatement(conn: RustConnection, query: String) extends PreparedStatement {
   val params = mutable.Buffer.empty[Int]
 
   lazy val resultSet = {
@@ -20,6 +21,7 @@ case class CustomPreparedStatement(query: String) extends PreparedStatement {
     ).toString()
 
     val cResult2 = RustInterfaceGraal.sqlQuery(
+      conn,
       CTypeConversion.toCString(query).get(),
       CTypeConversion.toCString(paramsString).get()
     )
