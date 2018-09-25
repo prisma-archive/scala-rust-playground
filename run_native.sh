@@ -2,11 +2,11 @@
 
 set -e
 
-rm -f hello hello.h
+#rm -f hello hello.h
 echo ">>>>>>>>>>>> Compiling the rust sources"
 cd hello-rs && cargo build && cd -
 echo ">>>>>>>>>>>> Generating the Header files"
-cbindgen -o hello.h -l C hello-rs/src/lib.rs
+#cbindgen -o hello.h -l C hello-rs/src/lib.rs
 echo ">>>>>>>>>>>> Compiling the scala sources"
 sbt package -java-home $GRAAL_HOME
 echo ">>>>>>>>>>>> Generating the native image"

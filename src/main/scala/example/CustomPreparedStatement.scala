@@ -8,18 +8,26 @@ import java.util.Calendar
 
 import example.CIntegration.RustConnection
 import org.graalvm.nativeimage.c.`type`.CTypeConversion
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{JsArray, JsValue, Json}
 
 import scala.collection.mutable
 
 class CustomPreparedStatement(conn: RustConnection, query: String) extends PreparedStatement {
-  val params = mutable.Buffer.empty[Int]
+  val params = mutable.HashMap.empty[Int, JsValue]
 
-  lazy val resultSet = {
-    val paramsString = JsArray(
-      params.map(int => Json.obj("discriminator" -> "Int", "value" -> int))
-    ).toString()
+  override def execute()= {
+    val paramsString = JsArray(params.toSeq.sortBy(_._1).map(_._2)).toString()
+    RustInterfaceGraal.sqlExecute(
+      conn,
+      CTypeConversion.toCString(query).get(),
+      CTypeConversion.toCString(paramsString).get()
+    )
 
+    false
+  }
+
+  override def executeQuery(): ResultSet = {
+    val paramsString = JsArray(params.toSeq.sortBy(_._1).map(_._2)).toString()
     val cResult2 = RustInterfaceGraal.sqlQuery(
       conn,
       CTypeConversion.toCString(query).get(),
@@ -28,9 +36,6 @@ class CustomPreparedStatement(conn: RustConnection, query: String) extends Prepa
     val resultAsString = CTypeConversion.toJavaString(cResult2)
     JsonResultSet.fromString(resultAsString).get
   }
-
-  override def execute()                 = true
-  override def executeQuery(): ResultSet = resultSet
 
   override def setShort(parameterIndex: Int, x: Short) = ???
 
@@ -63,10 +68,12 @@ class CustomPreparedStatement(conn: RustConnection, query: String) extends Prepa
   override def setURL(parameterIndex: Int, x: URL) = ???
 
   override def setInt(parameterIndex: Int, x: Int): Unit = {
-    params += x
+    params.put(parameterIndex, Json.obj("discriminator" -> "Int", "value" -> x))
   }
 
-  override def setString(parameterIndex: Int, x: String) = ???
+  override def setString(parameterIndex: Int, x: String) ={
+    params.put(parameterIndex, Json.obj("discriminator" -> "String", "value" -> x))
+  }
 
   override def setLong(parameterIndex: Int, x: Long) = ???
 
@@ -138,7 +145,9 @@ class CustomPreparedStatement(conn: RustConnection, query: String) extends Prepa
 
   override def clearParameters() = ???
 
-  override def setBoolean(parameterIndex: Int, x: Boolean) = ???
+  override def setBoolean(parameterIndex: Int, x: Boolean) = {
+    params.put(parameterIndex, Json.obj("discriminator" -> "Boolean", "value" -> x))
+  }
 
   override def cancel() = ???
 

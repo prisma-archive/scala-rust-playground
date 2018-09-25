@@ -11,6 +11,8 @@ import play.api.libs.json.Json
 object Hello {
 
   def main(args: Array[String]): Unit = {
+//    System.load(new java.io.File("hello-rs/target/debug/libhello.dylib").getAbsolutePath)
+//    println(new java.io.File("hello-rs/target/debug/libhello.dylib").getAbsolutePath)
 //    testJna()
 
     testGraalsCApi()
@@ -38,6 +40,8 @@ object Hello {
     testStructViaGraal()
     testJsonViaGraal()
     testSqlViaGraal()
+    testTransaction()
+    testTransactionRollback()
   }
 
   def testStructViaGraal(): Unit = {
@@ -130,5 +134,63 @@ object Hello {
       println(s"published: ${rs.getBoolean("published")}")
       println(s"title: ${rs.getString("title")}")
     }
+  }
+
+  def testTransaction(): Unit = {
+    println("Test transaction")
+    import org.jooq.impl.DSL.{field, name, table}
+    val sql = DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true))
+    val query = sql
+      .insertInto(table("posts"))
+      .columns(field("title"), field("body"), field("published"))
+      .values("?", "?", "?")
+
+    val standardConformingStrings  = true
+    val withParameters             = true
+    val splitStatements            = true
+    val isBatchedReWriteConfigured = false
+    val rawSqlString =
+      Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
+
+    val driver     = CustomJdbcDriver()
+    val connection = driver.connect("postgres://postgres:prisma@localhost/", null)
+    val ps         = connection.prepareStatement(rawSqlString)
+    ps.setString(0, "Test")
+    ps.setString(1, "TestBody")
+    ps.setBoolean(2, true)
+
+    connection.setAutoCommit(false)
+    ps.execute()
+    connection.commit()
+//    connection.close()
+  }
+
+  def testTransactionRollback(): Unit = {
+    println("Test transaction rollback")
+    import org.jooq.impl.DSL.{field, name, table}
+    val sql = DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true))
+    val query = sql
+      .insertInto(table("posts"))
+      .columns(field("title"), field("body"), field("published"))
+      .values("?", "?", "?")
+
+    val standardConformingStrings  = true
+    val withParameters             = true
+    val splitStatements            = true
+    val isBatchedReWriteConfigured = false
+    val rawSqlString =
+      Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
+
+    val driver     = CustomJdbcDriver()
+    val connection = driver.connect("postgres://postgres:prisma@localhost/", null)
+    val ps         = connection.prepareStatement(rawSqlString)
+    ps.setString(0, "Test")
+    ps.setString(1, "TestBody")
+    ps.setBoolean(2, true)
+
+    connection.setAutoCommit(false)
+    ps.execute()
+    connection.rollback()
+//    connection.close()
   }
 }

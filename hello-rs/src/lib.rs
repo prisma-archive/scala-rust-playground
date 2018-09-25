@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 extern crate serde;
 extern crate serde_json;
 
@@ -12,13 +14,11 @@ use std::str;
 pub mod driver;
 
 #[no_mangle]
-#[allow(non_snake_case)]
-pub extern "C" fn newConnection(url: *const c_char) -> Box<driver::PsqlConnection> {
-    return driver::connect(to_string(url));
+pub extern "C" fn newConnection<'a>(url: *const c_char) -> Box<driver::PsqlConnection<'a>> {
+    return Box::new(driver::connect(to_string(url)));
 }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn sqlQuery(
     conn: &driver::PsqlConnection,
     query: *const c_char,
@@ -35,22 +35,55 @@ pub extern "C" fn sqlQuery(
     return to_ptr(result.to_string());
 }
 
+#[no_mangle]
+pub extern "C" fn sqlExecute(
+    conn: &driver::PsqlConnection,
+    query: *const c_char,
+    params: *const c_char,
+) {
+    let queryString = to_string(query);
+    let paramsString = to_string(params);
+    let params = purepg::toGcValues(&paramsString).expect(&*format!(
+        "could not convert gc values successfully: {}",
+        &paramsString
+    ));
+
+    conn.execute(queryString, params.iter().collect());
+}
+
+#[no_mangle]
+pub extern "C" fn closeConnection(conn: Box<driver::PsqlConnection>) {
+    conn.close();
+}
+
+#[no_mangle]
+pub extern "C" fn startTransaction<'a>(conn: &'a mut driver::PsqlConnection<'a>) {
+    conn.startTransaction();
+}
+
+#[no_mangle]
+pub extern "C" fn commitTransaction(conn: Box<driver::PsqlConnection>) {
+    conn.commitTransaction();
+}
+
+#[no_mangle]
+pub extern "C" fn rollbackTransaction(conn: Box<driver::PsqlConnection>) {
+    conn.rollbackTransaction();
+}
+
 //
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn printHello() {
     println!("Hello! (This was printed in Rust)");
 }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn hello() -> *const c_char {
     return to_ptr("Hello from Rust!".to_string());
 }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn formatHello(str: *const c_char) -> *const c_char {
     let argAsString = to_string(str);
     return to_ptr(format!(
@@ -60,7 +93,6 @@ pub extern "C" fn formatHello(str: *const c_char) -> *const c_char {
 }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn processJson(string: *const c_char) -> *const c_char {
     let message: JsonMessage = serde_json::from_str(&to_string(string)).unwrap();
     let responseJson = serde_json::to_string(&JsonMessage {
@@ -78,7 +110,6 @@ struct JsonMessage {
 pub mod purepg;
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn readFromDb(query: *const c_char) -> *const c_char {
     //    let connection = db::establish_connection();
     //    let posts = db::get_posts_diesel(connection);
@@ -87,7 +118,7 @@ pub extern "C" fn readFromDb(query: *const c_char) -> *const c_char {
 }
 
 // #[no_mangle]
-// #[allow(non_snake_case)]
+//
 // pub extern "C" fn sqlQuery(query: *const c_char, params: *const c_char) -> *const c_char {
 //     let queryString = to_string(query);
 //     let paramsString = to_string(params);
@@ -100,7 +131,6 @@ pub extern "C" fn readFromDb(query: *const c_char) -> *const c_char {
 // }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn newCounterByReference() -> Box<Counter> {
     let c = Counter { count: 0 };
     //    mem::forget(&c);
@@ -108,7 +138,6 @@ pub extern "C" fn newCounterByReference() -> Box<Counter> {
 }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn newCounterByValue() -> Counter {
     // i added this public function so that the Counter struct is added to the header file. Otherwise it won't.
     let c = Counter { count: 0 };
@@ -118,7 +147,6 @@ pub extern "C" fn newCounterByValue() -> Counter {
 
 #[no_mangle]
 #[repr(C)]
-#[allow(non_snake_case)]
 pub struct Counter {
     count: u64,
 }
@@ -130,7 +158,6 @@ impl Drop for Counter {
 }
 
 #[no_mangle]
-#[allow(non_snake_case)]
 pub extern "C" fn increment(arg: &mut Counter) {
     arg.count = arg.count + 1
     //println!(format!("count is {} now!", self.count))
