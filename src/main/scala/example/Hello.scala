@@ -37,11 +37,18 @@ object Hello {
     val formattedHello = CTypeConversion.toJavaString(RustInterfaceGraal.formatHello(CTypeConversion.toCString("Marcus").get()))
     println(s"formatHello returned: $formattedHello")
 
+    println("*" * 100)
     testStructViaGraal()
+    println("*" * 100)
     testJsonViaGraal()
+    println("*" * 100)
     testSqlViaGraal()
-    testTransaction()
+    println("*" * 100)
+    testSqlMultiple()
+    println("*" * 100)
     testTransactionRollback()
+    println("*" * 100)
+    testTransaction()
   }
 
   def testStructViaGraal(): Unit = {
@@ -81,45 +88,14 @@ object Hello {
       .from(table("posts"))
       .where(field("id").in("?", "?"))
 
-//    val rawSqlString = query.getSQL(ParamType.NAMED).replace(":", "$")
     val standardConformingStrings  = true
     val withParameters             = true
     val splitStatements            = true
     val isBatchedReWriteConfigured = false
-    val rawSqlString =
-      Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
-    println(s"raw sql string: $rawSqlString")
-//    println(query.getSQL(ParamType.INDEXED))
-//    println("-" * 50)
-//    println(query.getSQL(ParamType.NAMED))
-//    println("-" * 50)
-//    println(query.getSQL(ParamType.NAMED_OR_INLINED))
-//    println("-" * 50)
-//    println(query.getSQL(ParamType.INLINED))
-//    println("-" * 50)
-    val paramsString = Json
-      .arr(
-        Json.obj("discriminator" -> "Int", "value" -> 1),
-        Json.obj("discriminator" -> "Int", "value" -> 2)
-      )
-      .toString()
-//    val cResult2 = RustInterfaceGraal.sqlQuery(
-//      CTypeConversion.toCString(rawSqlString).get(),
-//      CTypeConversion.toCString(paramsString).get()
-//    )
-//    val resultAsString = CTypeConversion.toJavaString(cResult2)
-//    println(s"sql result is: $resultAsString")
-//
-//    val jsonResultSet = JsonResultSet.fromString(resultAsString).get
-//    while (jsonResultSet.next()) {
-//      println(s"body: ${jsonResultSet.getString("body")}")
-//      println(s"id: ${jsonResultSet.getInt("id")}")
-//      println(s"published: ${jsonResultSet.getBoolean("published")}")
-//      println(s"title: ${jsonResultSet.getString("title")}")
-//    }
+    val rawSqlString = Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
 
-    println("*" * 100)
-    println("      Testing the CustomJdbcDriver !!!")
+    println(s"raw sql string: $rawSqlString")
+
     // testing custom jdbc driver
     val driver     = CustomJdbcDriver()
     val connection = driver.connect("postgres://postgres:prisma@localhost/", null)
@@ -134,6 +110,47 @@ object Hello {
       println(s"published: ${rs.getBoolean("published")}")
       println(s"title: ${rs.getString("title")}")
     }
+    connection.close()
+  }
+
+  def testSqlMultiple(): Unit = {
+    import org.jooq.impl.DSL.{field, name, table}
+
+    println("Testing multiple")
+
+    val sql = DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true))
+    val query = sql
+      .insertInto(table("posts"))
+      .columns(field("title"), field("body"), field("published"))
+      .values("?", "?", "?")
+
+    val standardConformingStrings  = true
+    val withParameters             = true
+    val splitStatements            = true
+    val isBatchedReWriteConfigured = false
+    val rawSqlString = Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
+
+    println(s"raw sql string: $rawSqlString")
+
+    val driver     = CustomJdbcDriver()
+    val connection = driver.connect("postgres://postgres:prisma@localhost/", null)
+
+    val ps         = connection.prepareStatement(rawSqlString)
+    ps.setString(0, "Test1")
+    ps.setString(1, "TestBody1")
+    ps.setBoolean(2, true)
+
+    val ps2 = connection.prepareStatement(rawSqlString)
+    ps2.setString(0, "Test2")
+    ps2.setString(1, "TestBody2")
+    ps2.setBoolean(2, false)
+
+    println("Executing 1")
+    ps.execute()
+    println("Executing 2")
+    ps2.execute()
+
+    println("Done, closing connection.")
     connection.close()
   }
 

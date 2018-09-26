@@ -15,7 +15,10 @@ pub mod driver;
 
 #[no_mangle]
 pub extern "C" fn newConnection<'a>(url: *const c_char) -> *mut driver::PsqlConnection<'a> {
-    return &mut driver::connect(to_string(url));
+    let mut connection = driver::connect(to_string(url));
+    let ptr = Box::into_raw(Box::new(connection));
+
+    return ptr;
 }
 
 #[no_mangle]
@@ -41,6 +44,7 @@ pub extern "C" fn sqlExecute(
     query: *const c_char,
     params: *const c_char,
 ) {
+    println!("Calling exec");
     let queryString = to_string(query);
     let paramsString = to_string(params);
     let params = purepg::toGcValues(&paramsString).expect(&*format!(
@@ -52,8 +56,9 @@ pub extern "C" fn sqlExecute(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn closeConnection(conn: *mut driver::PsqlConnection) {
-    (*conn).close();
+pub extern "C" fn closeConnection(conn: *mut driver::PsqlConnection) {
+    let wat = unsafe { Box::from_raw(conn) };
+    wat.close();
 }
 
 #[no_mangle]
@@ -64,13 +69,21 @@ pub extern "C" fn startTransaction<'a>(conn: *mut driver::PsqlConnection) {
 }
 
 #[no_mangle]
-pub extern "C" fn commitTransaction(conn: Box<driver::PsqlConnection>) {
-    conn.commitTransaction();
+pub extern "C" fn commitTransaction(conn: *mut driver::PsqlConnection) {
+    println!("[Rust] committing");
+    let wat = unsafe { Box::from_raw(conn) };
+    wat.commitTransaction();
+    mem::forget(wat);
+    println!("[Rust] committed");
 }
 
 #[no_mangle]
-pub extern "C" fn rollbackTransaction(conn: Box<driver::PsqlConnection>) {
-    conn.rollbackTransaction();
+pub extern "C" fn rollbackTransaction(conn: *mut driver::PsqlConnection) {
+    println!("[Rust] Rolling back");
+    let wat = unsafe { Box::from_raw(conn) };
+    wat.rollbackTransaction();
+    mem::forget(wat);
+    println!("[Rust] Rolled back");
 }
 
 //
