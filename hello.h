@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef struct Box_Counter {} Box_Counter;
+typedef struct Box_Counter Box_Counter;
 
-typedef struct PsqlConnection {} PsqlConnection;
+typedef struct PsqlConnection PsqlConnection;
 
-typedef struct Box_PsqlConnection {} Box_PsqlConnection;
+typedef struct Box_PsqlConnection Box_PsqlConnection;
 
 typedef struct {
   uint64_t count;

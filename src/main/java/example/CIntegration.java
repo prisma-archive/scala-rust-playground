@@ -31,7 +31,6 @@ public class CIntegration {
         long getCount();
     }
 
-    @CStruct("PsqlConnection")
-    public interface RustConnection extends PointerBase {
-    }
+    @CStruct(value = "PsqlConnection", isIncomplete = true)
+    public interface RustConnection extends PointerBase {}
 }

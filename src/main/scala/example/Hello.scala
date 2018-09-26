@@ -134,6 +134,7 @@ object Hello {
       println(s"published: ${rs.getBoolean("published")}")
       println(s"title: ${rs.getString("title")}")
     }
+    connection.close()
   }
 
   def testTransaction(): Unit = {
@@ -162,7 +163,7 @@ object Hello {
     connection.setAutoCommit(false)
     ps.execute()
     connection.commit()
-//    connection.close()
+    connection.close()
   }
 
   def testTransactionRollback(): Unit = {
@@ -191,6 +192,6 @@ object Hello {
     connection.setAutoCommit(false)
     ps.execute()
     connection.rollback()
-//    connection.close()
+    connection.close()
   }
 }

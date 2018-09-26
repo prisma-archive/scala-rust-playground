@@ -14,8 +14,8 @@ use std::str;
 pub mod driver;
 
 #[no_mangle]
-pub extern "C" fn newConnection<'a>(url: *const c_char) -> Box<driver::PsqlConnection<'a>> {
-    return Box::new(driver::connect(to_string(url)));
+pub extern "C" fn newConnection<'a>(url: *const c_char) -> *mut driver::PsqlConnection<'a> {
+    return &mut driver::connect(to_string(url));
 }
 
 #[no_mangle]
@@ -52,13 +52,15 @@ pub extern "C" fn sqlExecute(
 }
 
 #[no_mangle]
-pub extern "C" fn closeConnection(conn: Box<driver::PsqlConnection>) {
-    conn.close();
+pub unsafe extern "C" fn closeConnection(conn: *mut driver::PsqlConnection) {
+    (*conn).close();
 }
 
 #[no_mangle]
-pub extern "C" fn startTransaction<'a>(conn: &'a mut driver::PsqlConnection<'a>) {
-    conn.startTransaction();
+pub extern "C" fn startTransaction<'a>(conn: *mut driver::PsqlConnection) {
+    unsafe {
+        (*conn).startTransaction();
+    }
 }
 
 #[no_mangle]
