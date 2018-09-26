@@ -6,21 +6,19 @@ import java.sql
 import java.sql.{Blob, Clob, Date, NClob, PreparedStatement, Ref, ResultSet, RowId, SQLXML, Time, Timestamp}
 import java.util.Calendar
 
-import example.CIntegration.RustConnection
-import org.graalvm.nativeimage.c.`type`.CTypeConversion
 import play.api.libs.json.{JsArray, JsValue, Json}
 
 import scala.collection.mutable
 
-class CustomPreparedStatement(conn: RustConnection, query: String) extends PreparedStatement {
+class CustomPreparedStatement(conn: RustConnection, query: String, binding: RustBinding[RustConnection]) extends PreparedStatement {
   val params = mutable.HashMap.empty[Int, JsValue]
 
   override def execute()= {
     val paramsString = JsArray(params.toSeq.sortBy(_._1).map(_._2)).toString()
-    RustInterfaceGraal.sqlExecute(
+    binding.sqlExecute(
       conn,
-      CTypeConversion.toCString(query).get(),
-      CTypeConversion.toCString(paramsString).get()
+      query,
+      paramsString
     )
 
     false
@@ -28,13 +26,13 @@ class CustomPreparedStatement(conn: RustConnection, query: String) extends Prepa
 
   override def executeQuery(): ResultSet = {
     val paramsString = JsArray(params.toSeq.sortBy(_._1).map(_._2)).toString()
-    val cResult2 = RustInterfaceGraal.sqlQuery(
+    val result = binding.sqlQuery(
       conn,
-      CTypeConversion.toCString(query).get(),
-      CTypeConversion.toCString(paramsString).get()
+      query,
+      paramsString
     )
-    val resultAsString = CTypeConversion.toJavaString(cResult2)
-    JsonResultSet.fromString(resultAsString).get
+
+    JsonResultSet.fromString(result).get
   }
 
   override def setShort(parameterIndex: Int, x: Short) = ???

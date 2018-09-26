@@ -5,21 +5,19 @@ import java.util
 import java.util.Properties
 import java.util.concurrent.Executor
 
-import org.graalvm.nativeimage.c.`type`.CTypeConversion
+class CustomJdbcConnection(url: String, binding: RustBinding[RustConnection]) extends Connection {
 
-class CustomJdbcConnection(url: String) extends Connection {
-
-  val connection = RustInterfaceGraal.newConnection(CTypeConversion.toCString(url).get())
+  val connection = binding.newConnection(url)
   var autoCommit = true
 
-  override def prepareStatement(sql: String): PreparedStatement = new CustomPreparedStatement(connection, sql)
+  override def prepareStatement(sql: String): PreparedStatement = new CustomPreparedStatement(connection, sql, binding)
 
   override def commit() = {
     if (autoCommit) {
       sys.error("Called commit without transaction")
     }
 
-    RustInterfaceGraal.commitTransaction(connection)
+    binding.commitTransaction(connection)
   }
 
   override def getHoldability = ???
@@ -62,8 +60,8 @@ class CustomJdbcConnection(url: String) extends Connection {
 
   override def setAutoCommit(autoCommit: Boolean) = {
     (this.autoCommit, autoCommit) match {
-      case (true, false) => RustInterfaceGraal.startTransaction(connection)
-      case (false, true) => RustInterfaceGraal.commitTransaction(connection)
+      case (true, false) => binding.startTransaction(connection)
+      case (false, true) => binding.commitTransaction(connection)
       case (true, true) | (false, false)  =>
     }
 
@@ -97,13 +95,13 @@ class CustomJdbcConnection(url: String) extends Connection {
   override def setSavepoint(name: String) = ???
 
   override def close() = {
-    RustInterfaceGraal.closeConnection(connection)
+    binding.closeConnection(connection)
   }
 
   override def createNClob() = ???
 
   override def rollback() = {
-    RustInterfaceGraal.rollbackTransaction(connection)
+    binding.rollbackTransaction(connection)
   }
 
   override def rollback(savepoint: Savepoint) = ???
