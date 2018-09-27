@@ -6,9 +6,8 @@ import org.jooq.impl.DSL
 import org.postgresql.core.Parser
 
 object Hello {
-
-  val binding = RustGraalImpl
-  val driver = CustomJdbcDriver(binding.asInstanceOf[RustBinding[RustConnection]])
+  val binding = RustJnaImpl
+  val driver  = CustomJdbcDriver(binding.asInstanceOf[RustBinding[RustConnection]])
 
   def main(args: Array[String]): Unit = {
     testSqlViaGraal()
@@ -29,7 +28,8 @@ object Hello {
     val withParameters             = true
     val splitStatements            = true
     val isBatchedReWriteConfigured = false
-    val rawSqlString = Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
+    val rawSqlString =
+      Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
 
     println(s"raw sql string: $rawSqlString")
     val connection = driver.connect("postgres://postgres:prisma@localhost/", null)
@@ -62,7 +62,8 @@ object Hello {
     val withParameters             = true
     val splitStatements            = true
     val isBatchedReWriteConfigured = false
-    val rawSqlString = Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
+    val rawSqlString =
+      Parser.parseJdbcSql(query.getSQL(), standardConformingStrings, withParameters, splitStatements, isBatchedReWriteConfigured).get(0).nativeSql
 
     println(s"raw sql string: $rawSqlString")
 

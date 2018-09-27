@@ -7,30 +7,6 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 @CLibrary("hello")
 public class RustInterfaceGraal {
     @CFunction
-    static native void printHello();
-
-    @CFunction
-    static native CCharPointer hello();
-
-    @CFunction
-    static native CCharPointer formatHello(CCharPointer str);
-
-    @CFunction
-    static native CCharPointer processJson(CCharPointer str);
-
-    @CFunction
-    static native CCharPointer readFromDb(CCharPointer query);
-
-    @CFunction
-    static native CIntegration.Counter newCounterByReference();
-
-    @CFunction
-    static native CIntegration.Counter newCounterByValue();
-
-    @CFunction
-    static native void increment(CIntegration.Counter counter);
-
-    @CFunction
     static native CIntegration.RustConnection newConnection(CCharPointer url);
 
     @CFunction

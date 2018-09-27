@@ -5,8 +5,7 @@ import org.graalvm.nativeimage.c.`type`.{CCharPointer, CTypeConversion}
 
 sealed trait RustConnection
 class RustConnectionGraal(val conn: CIntegration.RustConnection) extends RustConnection
-class RustConnectionJna(val conn: Pointer) extends RustConnection
-
+class RustConnectionJna(val conn: Pointer)                       extends RustConnection
 
 trait RustBinding[T <: RustConnection] {
   def newConnection(url: String): T
@@ -19,17 +18,18 @@ trait RustBinding[T <: RustConnection] {
 }
 
 object RustGraalImpl extends RustBinding[RustConnectionGraal] {
-
   def toJavaString(str: CCharPointer) = CTypeConversion.toJavaString(str)
-  def toCString(str: String) = CTypeConversion.toCString(str).get()
+  def toCString(str: String)          = CTypeConversion.toCString(str).get()
 
-  override def newConnection(url: String): RustConnectionGraal = new RustConnectionGraal(RustInterfaceGraal.newConnection(toCString(url)))
-  override def startTransaction(connection: RustConnectionGraal): Unit = RustInterfaceGraal.startTransaction(connection.conn)
-  override def commitTransaction(connection: RustConnectionGraal): Unit = RustInterfaceGraal.commitTransaction(connection.conn)
+  override def newConnection(url: String): RustConnectionGraal            = new RustConnectionGraal(RustInterfaceGraal.newConnection(toCString(url)))
+  override def startTransaction(connection: RustConnectionGraal): Unit    = RustInterfaceGraal.startTransaction(connection.conn)
+  override def commitTransaction(connection: RustConnectionGraal): Unit   = RustInterfaceGraal.commitTransaction(connection.conn)
   override def rollbackTransaction(connection: RustConnectionGraal): Unit = RustInterfaceGraal.rollbackTransaction(connection.conn)
-  override def closeConnection(connection: RustConnectionGraal): Unit = RustInterfaceGraal.closeConnection(connection.conn)
-  override def sqlExecute(connection: RustConnectionGraal, query: String, params: String): Unit = RustInterfaceGraal.sqlExecute(connection.conn, toCString(query), toCString(params))
-  override def sqlQuery(connection: RustConnectionGraal, query: String, params: String): String = toJavaString(RustInterfaceGraal.sqlQuery(connection.conn, toCString(query), toCString(params)))
+  override def closeConnection(connection: RustConnectionGraal): Unit     = RustInterfaceGraal.closeConnection(connection.conn)
+  override def sqlExecute(connection: RustConnectionGraal, query: String, params: String): Unit =
+    RustInterfaceGraal.sqlExecute(connection.conn, toCString(query), toCString(params))
+  override def sqlQuery(connection: RustConnectionGraal, query: String, params: String): String =
+    toJavaString(RustInterfaceGraal.sqlQuery(connection.conn, toCString(query), toCString(params)))
 }
 
 object RustJnaImpl extends RustBinding[RustConnectionJna] {
@@ -39,21 +39,14 @@ object RustJnaImpl extends RustBinding[RustConnectionJna] {
   System.setProperty("jna.debug_load", "true")
   System.setProperty("jna.library.path", s"$currentDir/hello-rs/target/debug")
   val library = Native.loadLibrary("hello", classOf[RustInterfaceJna])
-
   override def newConnection(url: String): RustConnectionJna = {
     new RustConnectionJna(library.newConnection("postgres://postgres:prisma@localhost/"))
   }
 
-  override def startTransaction(connection: RustConnectionJna): Unit = ???
-
-  override def commitTransaction(connection: RustConnectionJna): Unit = ???
-
-  override def rollbackTransaction(connection: RustConnectionJna): Unit = ???
-
-  override def closeConnection(connection: RustConnectionJna): Unit = ???
-
-  override def sqlExecute(connection: RustConnectionJna, query: String, params: String): Unit = ???
-
-  override def sqlQuery(connection: RustConnectionJna, query: String, params: String): String = ???
+  override def startTransaction(connection: RustConnectionJna): Unit                          = library.startTransaction(connection.conn)
+  override def commitTransaction(connection: RustConnectionJna): Unit                         = library.commitTransaction(connection.conn)
+  override def rollbackTransaction(connection: RustConnectionJna): Unit                       = library.rollbackTransaction(connection.conn)
+  override def closeConnection(connection: RustConnectionJna): Unit                           = library.closeConnection(connection.conn)
+  override def sqlExecute(connection: RustConnectionJna, query: String, params: String): Unit = library.sqlExecute(connection.conn, query, params)
+  override def sqlQuery(connection: RustConnectionJna, query: String, params: String): String = library.sqlQuery(connection.conn, query, params)
 }
-
