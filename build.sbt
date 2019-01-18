@@ -1,20 +1,53 @@
 import Dependencies._
 import sbt._
 
-import scala.sys.process.ProcessLogger
+def absolute(relativePathToProjectRoot: String) = {
+  s"${System.getProperty("user.dir")}/${relativePathToProjectRoot.stripPrefix("/")}"
+}
 
-lazy val root = (project in file(".")).
-  settings(
+val buildNativeLib = TaskKey[Unit]("buildNativeLib", "builds the native rust lib")
+buildNativeLib := {
+  import sys.process._
+
+  println("Building Rust lib.")
+
+  val logger = ProcessLogger(println, println)
+  val nativePath = new java.io.File("rust/")
+
+  if ((Process(s"make build", nativePath) ! logger) != 0) {
+    sys.error("Rust library build failed.")
+  }
+}
+
+lazy val root = (project in file("."))
+  .enablePlugins(PrismaGraalPlugin)
+  .settings(
     inThisBuild(List(
-      organization := "com.example",
+      organization := "io.prisma",
       scalaVersion := "2.12.6",
       version      := "0.1.0-SNAPSHOT"
     )),
-    name := "hello-scala",
-    libraryDependencies ++= allDeps
+    name := "scala-rust-playground",
+    libraryDependencies ++= allDeps,
+    nativeImageOptions ++= Seq(
+      "--enable-all-security-services",
+      s"-H:CLibraryPath=${absolute("rust/target/debug")}",
+      //"--rerun-class-initialization-at-runtime=",
+      //"-H:IncludeResources=",
+      s"-H:ReflectionConfigurationFiles=${absolute("reflection_config.json")}",
+      "--verbose",
+      "--no-server",
+      //"-H:+AllowVMInspection"
+    ),
+    unmanagedJars in Compile ++= Seq(file(sys.env("GRAAL_HOME") + "/jre/lib/svm/builder/svm.jar"), file(sys.env("GRAAL_HOME") + "/jre/lib/boot/graal-sdk.jar")),
+    compile in Compile := {
+      buildNativeLib.value
+      (compile in Compile).value
+    }
   )
 
 val nativeClasspath = taskKey[String]("The classpath.")
+
 nativeClasspath := {
   val baseDir = baseDirectory.value
   val managedDir = managedDirectory.value
@@ -28,11 +61,10 @@ nativeClasspath := {
       inManaged.relativeTo(baseDir)
     }
   }
+
   val classpath = (deps :+ packagedFile).flatten
-
   def relativePath(path: File): String = path.toString.replaceAll("\\\\", "/")
-
   val classpathStr = classpath.map(relativePath).mkString(":")
-  println(classpathStr)
+
   classpathStr
 }

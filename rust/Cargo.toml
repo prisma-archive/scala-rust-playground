@@ -1,0 +1,12 @@
+[lib]
+crate-type = ["staticlib"]
+
+[package]
+name = "playground"
+version = "0.1.0"
+authors = [""]
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
