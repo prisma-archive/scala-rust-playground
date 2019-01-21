@@ -1,5 +1,6 @@
 import Dependencies._
 import sbt._
+import java.io.File
 
 def absolute(relativePathToProjectRoot: String) = {
   s"${System.getProperty("user.dir")}/${relativePathToProjectRoot.stripPrefix("/")}"
@@ -40,6 +41,13 @@ lazy val root = (project in file("."))
       //"-H:+AllowVMInspection"
     ),
     unmanagedJars in Compile ++= Seq(file(sys.env("GRAAL_HOME") + "/jre/lib/svm/builder/svm.jar"), file(sys.env("GRAAL_HOME") + "/jre/lib/boot/graal-sdk.jar")),
+
+    PB.protocVersion := "-v261",
+    PB.protoSources in Compile := Seq(new File("protobuf")),
+    PB.targets in Compile := Seq(
+      scalapb.gen() -> (sourceManaged in Compile).value
+    ),
+
     compile in Compile := {
       buildNativeLib.value
       (compile in Compile).value

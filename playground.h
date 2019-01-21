@@ -1,3 +1,9 @@
 #include <stdlib.h>
+#include <stdint.h>
 
-void simple_test(const char *msg);
+typedef struct ProtoBuf {
+    uint8_t *data;
+    uintptr_t len;
+} ProtoBuf;
+
+ProtoBuf *pb_output();

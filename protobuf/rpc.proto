@@ -1,0 +1,15 @@
+syntax = "proto2";
+package rpc;
+
+message Header {
+    required string type_name = 1;
+}
+
+message Rpc {
+    required Header header = 1;
+}
+
+message User {
+    required Header header = 1;
+    required string name = 2;
+}
