@@ -4,6 +4,9 @@ import org.graalvm.nativeimage.c.function.CFunction;
 import org.graalvm.nativeimage.c.function.CLibrary;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CLongPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
+import rpc.rpc.User;
+import java.nio.ByteBuffer;
 
 @CLibrary("playground")
 public class RustInterfaceGraal {
