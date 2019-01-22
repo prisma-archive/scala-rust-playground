@@ -7,3 +7,4 @@ typedef struct ProtoBuf {
 } ProtoBuf;
 
 ProtoBuf *pb_output();
+void *pb_input(const char *data, uintptr_t len);

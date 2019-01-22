@@ -1,4 +1,6 @@
-use std::mem;
+use std::{
+    mem,
+};
 
 pub mod rpc {
     include!(concat!(env!("OUT_DIR"), "/rpc.rs"));
@@ -7,8 +9,8 @@ pub mod rpc {
 #[repr(C)]
 #[no_mangle]
 pub struct ProtoBuf {
-    data: *mut u8,
-    len: usize,
+    pub data: *mut u8,
+    pub len: usize,
 }
 
 impl ProtoBuf {

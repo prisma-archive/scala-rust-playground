@@ -12,4 +12,7 @@ import java.nio.ByteBuffer;
 public class RustInterfaceGraal {
     @CFunction
     static native CIntegration.ProtoBuf pb_output();
+
+    @CFunction
+    static native void pb_input(CCharPointer data, long len);
 }

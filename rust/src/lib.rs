@@ -9,6 +9,7 @@ use protobuf::{
     ProtoBuf,
 };
 
+use std::slice;
 use prost::Message;
 
 #[no_mangle]
@@ -24,6 +25,14 @@ pub extern "C" fn pb_output() -> *mut ProtoBuf {
     user.encode(&mut payload).unwrap();
 
     ProtoBuf::from(payload).into_boxed_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn pb_input(data: *mut u8, len: usize) {
+    let payload = unsafe { slice::from_raw_parts_mut(data, len) };
+    let user = User::decode(payload).unwrap();
+    
+    println!("Rust got a type {} from Scala with name {}", user.header.type_name, user.name);
 }
 
 #[cfg(test)]
