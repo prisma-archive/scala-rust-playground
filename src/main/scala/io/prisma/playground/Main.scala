@@ -7,11 +7,8 @@ import rpc.rpc.{User, Header}
 import org.graalvm.word.WordFactory
 import java.nio.ByteBuffer
 
-object Main {
-  def toJavaString(str: CCharPointer)                            = CTypeConversion.toJavaString(str)
-  def toCString(str: String): CTypeConversion.CCharPointerHolder = CTypeConversion.toCString(str)
-
-  def getUser(): User = {
+object UserHelper {
+  def get(): User = {
     val protoBuf = RustInterfaceGraal.pb_output()
     val buf: ByteBuffer = CTypeConversion.asByteBuffer(protoBuf.getData, protoBuf.getLen.toInt)
     val arr: Array[Byte] = new Array(buf.remaining());
@@ -24,18 +21,27 @@ object Main {
     user
   }
   
-  def putUser(user: User) = {
+  def put(user: User) = {
     val ary = user.toByteArray
     val len = ary.length
     val data = PinnedObject.create(ary)
     RustInterfaceGraal.pb_input(data.addressOfArrayElement(0), len.toLong)
+    data.close()
   }
+}
+
+object Main {
+  def toJavaString(str: CCharPointer)                            = CTypeConversion.toJavaString(str)
+  def toCString(str: String): CTypeConversion.CCharPointerHolder = CTypeConversion.toCString(str)
 
   def main(args: Array[String]): Unit = {
     try {
-      val user1 = getUser()
-      println("Scala got a type " ++ user1.header.typeName ++ " from Rust with name " ++ user1.name)
-      putUser(User(Header("User"), "Naukio"))
+      while (true) {
+        val user = UserHelper.get()
+        println("Scala got a type " ++ user.header.typeName ++ " from Rust with name " ++ user.name)
+        UserHelper.put(User(Header("User"), "Naukio"))
+        Thread.sleep(1000)
+      }
     } catch {
       case e: Throwable =>
         e.printStackTrace()

@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate prost_derive;
 
+#[macro_use]
+extern crate lazy_static;
+
 mod ffi_utils;
 mod protobuf;
 
@@ -9,8 +12,38 @@ use protobuf::{
     ProtoBuf,
 };
 
-use std::slice;
+use std::{slice, fmt};
 use prost::Message;
+
+pub struct Pool {
+    string: String,
+}
+
+impl Pool {
+    pub fn new(string: &str) -> Self {
+        println!("******** NEW POOL ********");
+        
+        Pool {
+            string: String::from(string),
+        }
+    }
+}
+
+impl fmt::Display for Pool {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.string)
+    }
+}
+
+impl Drop for Pool {
+    fn drop(&mut self) {
+        println!("******** DROP POOL ********");
+    }
+}
+
+lazy_static! {
+    pub static ref POOL: Pool = Pool::new("foo");
+}
 
 #[no_mangle]
 pub extern "C" fn pb_output() -> *mut ProtoBuf {
@@ -32,7 +65,12 @@ pub extern "C" fn pb_input(data: *mut u8, len: usize) {
     let payload = unsafe { slice::from_raw_parts_mut(data, len) };
     let user = User::decode(payload).unwrap();
     
-    println!("Rust got a type {} from Scala with name {}", user.header.type_name, user.name);
+    println!(
+        "Rust got a type {} from Scala with name {}, pool value is {}",
+        user.header.type_name,
+        user.name,
+        *POOL,
+    );
 }
 
 #[no_mangle]
@@ -54,7 +92,7 @@ mod tests {
             header: Header {
                 type_name: String::from("User")
             },
-            name: String::from("Musti"),
+            name: String::from("Naukio"),
         };
 
         let mut payload = Vec::new();
