@@ -15,4 +15,7 @@ public class RustInterfaceGraal {
 
     @CFunction
     static native void pb_input(CCharPointer data, long len);
+
+    @CFunction
+    static native void destroy(CIntegration.ProtoBuf data);
 }

@@ -35,6 +35,11 @@ pub extern "C" fn pb_input(data: *mut u8, len: usize) {
     println!("Rust got a type {} from Scala with name {}", user.header.type_name, user.name);
 }
 
+#[no_mangle]
+pub extern "C" fn destroy(data: *mut ProtoBuf) {
+    unsafe { Box::from_raw(data); }
+}
+
 #[cfg(test)]
 mod tests {
     use prost::Message;

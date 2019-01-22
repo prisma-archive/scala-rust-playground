@@ -12,12 +12,16 @@ object Main {
   def toCString(str: String): CTypeConversion.CCharPointerHolder = CTypeConversion.toCString(str)
 
   def getUser(): User = {
-      val protoBuf = RustInterfaceGraal.pb_output()
-      val buf: ByteBuffer = CTypeConversion.asByteBuffer(protoBuf.getData, protoBuf.getLen.toInt)
-      val arr: Array[Byte] = new Array(buf.remaining());
-      buf.get(arr);
+    val protoBuf = RustInterfaceGraal.pb_output()
+    val buf: ByteBuffer = CTypeConversion.asByteBuffer(protoBuf.getData, protoBuf.getLen.toInt)
+    val arr: Array[Byte] = new Array(buf.remaining());
+    buf.get(arr);
 
-      User.parseFrom(arr)
+    val user = User.parseFrom(arr)
+    
+    RustInterfaceGraal.destroy(protoBuf)
+    
+    user
   }
   
   def putUser(user: User) = {
